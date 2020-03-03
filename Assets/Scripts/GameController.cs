@@ -9,20 +9,23 @@ public class GameController : MonoBehaviour
     public GameObject Player;
     public GameObject Explosion;
     public Queue<GameObject[]> pathQueue;
-    float speed;
+    public float speed;
+    public float speedAdd;
     float waitTime = 0.7f;
     float counter;
-    float nextTurnInterval = 5;
+    public float nextTurnInterval = 10;
     int turnPathSize = 10;
     Vector3 vStartPos = new Vector3(0.5f,6,2);
     Vector3 hStartPos = new Vector3(9, -2.5f, 2);
     bool curveAhead = false;
     bool isLandscape = false;
+    bool creatingPath = true;
     public bool canTurn = false;
     public bool gameOver = false;
     
     void Awake() {
         speed = 3f;
+        speedAdd = 0.03f;
         Spawner = transform.Find("Spawner").gameObject;
         Player = GameObject.FindGameObjectWithTag("Player");
         pathQueue = new Queue<GameObject[]>();
@@ -36,16 +39,21 @@ public class GameController : MonoBehaviour
     void Update(){
         if (!gameOver){
             counter -= Time.deltaTime;
-            speed+=0.03f*Time.deltaTime;
-            if(!curveAhead){
-                if (counter <= 0) 
-                    {curveAhead = true; 
+            speed+=speedAdd*Time.deltaTime;
+            if(creatingPath){
+                if (counter<=(0.2f/speed)){
+                    creatingPath = false;
+                }
+            }
+            //if(!curveAhead){
+                if (counter <= 0) {
                     CreateTurn(); 
                     counter = nextTurnInterval/speed;}
-            }
+            //}
             if (Input.GetMouseButtonDown(0)){
                 Turn();
                 curveAhead = false;
+                creatingPath = true;
                 StartCoroutine(CreatPath());
             }
         }
@@ -54,7 +62,7 @@ public class GameController : MonoBehaviour
     IEnumerator CreatPath(){
         Instantiate(Path, Spawner.transform.position, Quaternion.identity);
         yield return new WaitForSeconds(waitTime/speed);
-        if(!curveAhead) {StartCoroutine(CreatPath());}
+        if(creatingPath) {StartCoroutine(CreatPath());}
     }
 
     void Turn(){
@@ -62,16 +70,16 @@ public class GameController : MonoBehaviour
             isLandscape = !isLandscape;
             GameObject[] tempPath = pathQueue.Dequeue();
             if (isLandscape) {
-                this.transform.position = new Vector3(tempPath[0].transform.position.x, this.transform.position.y, this.transform.position.z);
                 transform.Rotate(0, 0, -90); 
+                //this.transform.position = new Vector3(tempPath[0].transform.position.x, this.transform.position.y, this.transform.position.z);
                 Vector3 temp = Spawner.transform.position;
                 foreach (GameObject path in tempPath){
                     path.transform.position = new Vector3(path.transform.position.x, temp.y, path.transform.position.z);
                 }
                 StartCoroutine(Player.GetComponent<PlayerControl>().WindDirection(1));
             } else {
-                this.transform.position = new Vector3(this.transform.position.x, tempPath[0].transform.position.y, this.transform.position.z);
                 transform.Rotate(0, 0, 90); 
+                //this.transform.position = new Vector3(this.transform.position.x, tempPath[0].transform.position.y, this.transform.position.z);
                 Vector3 temp = Spawner.transform.position;
                 foreach (GameObject path in tempPath){
                     path.transform.position = new Vector3(temp.x, path.transform.position.y, path.transform.position.z);
