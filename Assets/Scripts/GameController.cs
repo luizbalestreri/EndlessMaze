@@ -5,45 +5,56 @@ using UnityEngine;
 public class GameController : MonoBehaviour
 {
     public GameObject Spawner;
-    public GameObject PathV;
+    public GameObject Path;
     public GameObject Player;
+    public GameObject Explosion;
     public Queue<GameObject[]> pathQueue;
     float speed;
     float waitTime = 0.7f;
-    float time = 2f;
-    int turnPathSize = 11;
+    float counter;
+    float nextTurnInterval = 5;
+    int turnPathSize = 10;
     Vector3 vStartPos = new Vector3(0.5f,6,2);
     Vector3 hStartPos = new Vector3(9, -2.5f, 2);
-    bool dirChanging = false;
+    bool curveAhead = false;
     bool isLandscape = false;
     public bool canTurn = false;
     public bool gameOver = false;
+    
     void Awake() {
         speed = 3f;
         Spawner = transform.Find("Spawner").gameObject;
         Player = GameObject.FindGameObjectWithTag("Player");
         pathQueue = new Queue<GameObject[]>();
     }
+
     void Start(){
         StartCoroutine("CreatPath");
+        counter = nextTurnInterval/speed;
     }
 
     void Update(){
         if (!gameOver){
-            time -= Time.deltaTime;
-            if (time <= 0) {dirChanging = true; CreateTurn(); time = 3;}
+            counter -= Time.deltaTime;
+            speed+=0.03f*Time.deltaTime;
+            if(!curveAhead){
+                if (counter <= 0) 
+                    {curveAhead = true; 
+                    CreateTurn(); 
+                    counter = nextTurnInterval/speed;}
+            }
             if (Input.GetMouseButtonDown(0)){
                 Turn();
-                dirChanging = false;
-                StartCoroutine("CreatV");
+                curveAhead = false;
+                StartCoroutine(CreatPath());
             }
         }
     }
 
     IEnumerator CreatPath(){
-        Instantiate(PathV, Spawner.transform.position, Quaternion.identity);
+        Instantiate(Path, Spawner.transform.position, Quaternion.identity);
         yield return new WaitForSeconds(waitTime/speed);
-        if(!dirChanging) {StartCoroutine("CreatPath");}
+        if(!curveAhead) {StartCoroutine(CreatPath());}
     }
 
     void Turn(){
@@ -51,45 +62,52 @@ public class GameController : MonoBehaviour
             isLandscape = !isLandscape;
             GameObject[] tempPath = pathQueue.Dequeue();
             if (isLandscape) {
+                this.transform.position = new Vector3(tempPath[0].transform.position.x, this.transform.position.y, this.transform.position.z);
                 transform.Rotate(0, 0, -90); 
-                //Player.transform.Rotate(0, 0, -90);
                 Vector3 temp = Spawner.transform.position;
                 foreach (GameObject path in tempPath){
                     path.transform.position = new Vector3(path.transform.position.x, temp.y, path.transform.position.z);
                 }
-
+                StartCoroutine(Player.GetComponent<PlayerControl>().WindDirection(1));
             } else {
-
+                this.transform.position = new Vector3(this.transform.position.x, tempPath[0].transform.position.y, this.transform.position.z);
                 transform.Rotate(0, 0, 90); 
-                //Player.transform.Rotate(0, 0, 90);
                 Vector3 temp = Spawner.transform.position;
                 foreach (GameObject path in tempPath){
                     path.transform.position = new Vector3(temp.x, path.transform.position.y, path.transform.position.z);
                 }
+                StartCoroutine(Player.GetComponent<PlayerControl>().WindDirection(-1));
             }
             canTurn = false;
+        } else {
+            GameOver();
+            if (isLandscape) {
+                transform.Rotate(0, 0, 90);
+            } else{
+                transform.Rotate(0, 0, -90); 
+            }
         }
     }
 
     void CreateTurn(){
-        dirChanging = true;
+        curveAhead = true;
         GameObject[] tempPath = new GameObject[turnPathSize];
         if (!isLandscape){
             for(int i = 0; i < turnPathSize - 1; i++){
-                GameObject clone = Instantiate(PathV,
-                            new Vector3(Spawner.transform.position.x + i, Spawner.transform.position.y, Spawner.transform.position.z),
+                GameObject clone = Instantiate(Path,
+                            new Vector3(Spawner.transform.position.x + 1 + i, Spawner.transform.position.y, Spawner.transform.position.z),
                             Quaternion.identity);
                 tempPath[i] = clone;  
             }
         }else{
             for(int i = 0; i < turnPathSize - 1; i++){
-                GameObject clone = Instantiate(PathV,
-                            new Vector3(Spawner.transform.position.x, Spawner.transform.position.y + i, Spawner.transform.position.z),
+                GameObject clone = Instantiate(Path,
+                            new Vector3(Spawner.transform.position.x, Spawner.transform.position.y + 1 + i, Spawner.transform.position.z),
                             Quaternion.identity);
                             tempPath[i] = clone;
             }
         }
-        GameObject clone2 = Instantiate(PathV, Spawner.transform.position, Spawner.transform.rotation);
+        GameObject clone2 = Instantiate(Path, Spawner.transform.position, Spawner.transform.rotation);
         clone2.GetComponent<Collider>().enabled = true;
         tempPath[turnPathSize - 1] = clone2;
         pathQueue.Enqueue(tempPath);
@@ -99,6 +117,9 @@ public class GameController : MonoBehaviour
         speed = 0;
         canTurn = false;
         gameOver = true;
+        Instantiate(Explosion, this.transform.position, Quaternion.identity);
+        Destroy(Player);
+
     }
 
     public float GetSpeed(){
