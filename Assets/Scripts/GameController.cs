@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameController : MonoBehaviour
 {
@@ -8,16 +10,17 @@ public class GameController : MonoBehaviour
     public GameObject Path;
     public GameObject Player;
     public GameObject Explosion;
+    public Text ScoreCounter;
+    public GameObject gameOverUI;
     public Queue<GameObject[]> pathQueue;
     public float speed;
     public float speedAdd;
+    public float nextTurnInterval = 10;
     float waitTime = 0.7f;
     float counter;
-    public float nextTurnInterval = 10;
+    public int scoreAdd = 1;
+    int score;
     int turnPathSize = 10;
-    Vector3 vStartPos = new Vector3(0.5f,6,2);
-    Vector3 hStartPos = new Vector3(9, -2.5f, 2);
-    bool curveAhead = false;
     bool isLandscape = false;
     bool creatingPath = true;
     public bool canTurn = false;
@@ -25,7 +28,8 @@ public class GameController : MonoBehaviour
     
     void Awake() {
         speed = 3f;
-        speedAdd = 0.03f;
+        score = 0;
+        speedAdd = 0.03f; 
         Spawner = transform.Find("Spawner").gameObject;
         Player = GameObject.FindGameObjectWithTag("Player");
         pathQueue = new Queue<GameObject[]>();
@@ -37,22 +41,22 @@ public class GameController : MonoBehaviour
     }
 
     void Update(){
+        ScoreCounter.text = score.ToString();
         if (!gameOver){
             counter -= Time.deltaTime;
             speed+=speedAdd*Time.deltaTime;
+            score+=scoreAdd;
+
             if(creatingPath){
                 if (counter<=(0.2f/speed)){
                     creatingPath = false;
                 }
             }
-            //if(!curveAhead){
-                if (counter <= 0) {
-                    CreateTurn(); 
-                    counter = nextTurnInterval/speed;}
-            //}
+            if (counter <= 0) {
+                CreateTurn(); 
+                counter = nextTurnInterval/speed;}
             if (Input.GetMouseButtonDown(0)){
                 Turn();
-                curveAhead = false;
                 creatingPath = true;
                 StartCoroutine(CreatPath());
             }
@@ -71,7 +75,6 @@ public class GameController : MonoBehaviour
             GameObject[] tempPath = pathQueue.Dequeue();
             if (isLandscape) {
                 transform.Rotate(0, 0, -90); 
-                //this.transform.position = new Vector3(tempPath[0].transform.position.x, this.transform.position.y, this.transform.position.z);
                 Vector3 temp = Spawner.transform.position;
                 foreach (GameObject path in tempPath){
                     path.transform.position = new Vector3(path.transform.position.x, temp.y, path.transform.position.z);
@@ -79,7 +82,6 @@ public class GameController : MonoBehaviour
                 StartCoroutine(Player.GetComponent<PlayerControl>().WindDirection(1));
             } else {
                 transform.Rotate(0, 0, 90); 
-                //this.transform.position = new Vector3(this.transform.position.x, tempPath[0].transform.position.y, this.transform.position.z);
                 Vector3 temp = Spawner.transform.position;
                 foreach (GameObject path in tempPath){
                     path.transform.position = new Vector3(temp.x, path.transform.position.y, path.transform.position.z);
@@ -98,7 +100,6 @@ public class GameController : MonoBehaviour
     }
 
     void CreateTurn(){
-        curveAhead = true;
         GameObject[] tempPath = new GameObject[turnPathSize];
         if (!isLandscape){
             for(int i = 0; i < turnPathSize - 1; i++){
@@ -127,6 +128,7 @@ public class GameController : MonoBehaviour
         gameOver = true;
         Instantiate(Explosion, this.transform.position, Quaternion.identity);
         Destroy(Player);
+        gameOverUI.SetActive(true);
 
     }
 
@@ -136,5 +138,10 @@ public class GameController : MonoBehaviour
 
     public bool GetDir(){
         return isLandscape;
+    }
+
+    public void Restart(){
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        gameOverUI.SetActive(false);
     }
 }
