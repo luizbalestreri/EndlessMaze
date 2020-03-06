@@ -18,18 +18,16 @@ public class PlayerControl : MonoBehaviour
 
     void Update(){
         var main = pS.main;
-        main.simulationSpeed = gameController.GetSpeed()/3;
+        main.simulationSpeed = gameController.speed/3;
         wZ.windMain = wzMain;
     }
 
     private void OnTriggerEnter(Collider other) {
         gameController.canTurn = true;
-        Debug.Log("enter");
     }
 
     private void OnTriggerExit(Collider other){
         other.GetComponent<Collider>().enabled = false;
-        Debug.Log("exit");
         if(gameController.canTurn){
             gameController.GameOver();
         }
@@ -37,7 +35,7 @@ public class PlayerControl : MonoBehaviour
 
     public IEnumerator WindDirection(int direction){
         wzMain = direction;
-        yield return new WaitForSeconds (waitTime/gameController.GetSpeed());
+        yield return new WaitForSeconds (waitTime/gameController.speed);
         wzMain = 0;
         yield return null;
     }

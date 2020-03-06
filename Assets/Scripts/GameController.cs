@@ -1,33 +1,24 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
+using EZCameraShake;
 
 public class GameController : MonoBehaviour
 {
-    public GameObject Spawner;
-    public GameObject Path;
-    public GameObject Player;
-    public GameObject Explosion;
-    public Text ScoreCounter;
-    public GameObject gameOverUI;
+    public GameObject Spawner, Path, Player, Explosion;
+    public UIController UIController;
     public Queue<GameObject[]> pathQueue;
-    public float speed;
-    public float speedAdd;
-    public float nextTurnInterval = 10;
-    float waitTime = 0.7f;
-    float counter;
+    public float speed{get; private set;} = 0;
+    public float speedAdd, nextTurnInterval = 10;
+    float counter, waitTime = 0.7f;
+    public int score{get; private set;}
     public int scoreAdd = 1;
-    int score;
     int turnPathSize = 10;
-    bool isLandscape = false;
+    public bool isLandscape {get; private set;} = false;
+    public bool canTurn = false, gameOver = true;
     bool creatingPath = true;
-    public bool canTurn = false;
-    public bool gameOver = false;
     
     void Awake() {
-        speed = 3f;
         score = 0;
         speedAdd = 0.03f; 
         Spawner = transform.Find("Spawner").gameObject;
@@ -35,13 +26,14 @@ public class GameController : MonoBehaviour
         pathQueue = new Queue<GameObject[]>();
     }
 
-    void Start(){
+    public void NewGame(){
+        speed = 3f;
         StartCoroutine("CreatPath");
-        counter = nextTurnInterval/speed;
+        gameOver = false;
+        counter = nextTurnInterval/speed - (9 * waitTime/speed);
     }
 
     void Update(){
-        ScoreCounter.text = score.ToString();
         if (!gameOver){
             counter -= Time.deltaTime;
             speed+=speedAdd*Time.deltaTime;
@@ -128,20 +120,8 @@ public class GameController : MonoBehaviour
         gameOver = true;
         Instantiate(Explosion, this.transform.position, Quaternion.identity);
         Destroy(Player);
-        gameOverUI.SetActive(true);
+        UIController.GameOverUI();
+        CameraShaker.Instance.ShakeOnce(2f, 2f, .1f, 0.5f);
 
-    }
-
-    public float GetSpeed(){
-        return speed;
-    }
-
-    public bool GetDir(){
-        return isLandscape;
-    }
-
-    public void Restart(){
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-        gameOverUI.SetActive(false);
     }
 }
