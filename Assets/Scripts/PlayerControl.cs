@@ -18,7 +18,7 @@ public class PlayerControl : MonoBehaviour
 
     void Update(){
         var main = pS.main;
-        main.simulationSpeed = gameController.speed/3;
+        if(!gameController.gameOver){main.simulationSpeed = gameController.speed/3;}
         wZ.windMain = wzMain;
     }
 

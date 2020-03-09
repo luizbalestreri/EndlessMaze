@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using EZCameraShake;
+using UnityEngine.EventSystems;
 
 public class GameController : MonoBehaviour
 {
@@ -20,7 +21,7 @@ public class GameController : MonoBehaviour
     
     void Awake() {
         score = 0;
-        speedAdd = 0.03f; 
+        speedAdd = 0.2f; 
         Spawner = transform.Find("Spawner").gameObject;
         Player = GameObject.FindGameObjectWithTag("Player");
         pathQueue = new Queue<GameObject[]>();
@@ -28,37 +29,40 @@ public class GameController : MonoBehaviour
 
     public void NewGame(){
         speed = 3f;
-        StartCoroutine("CreatPath");
+        StartCoroutine(CreatePath());
         gameOver = false;
         counter = nextTurnInterval/speed - (9 * waitTime/speed);
     }
 
     void Update(){
-        if (!gameOver){
+        if (!gameOver && !UIController.pause){
             counter -= Time.deltaTime;
             speed+=speedAdd*Time.deltaTime;
             score+=scoreAdd;
-
             if(creatingPath){
                 if (counter<=(0.2f/speed)){
                     creatingPath = false;
                 }
             }
             if (counter <= 0) {
-                CreateTurn(); 
-                counter = nextTurnInterval/speed;}
-            if (Input.GetMouseButtonDown(0)){
+                bool condicao = Random.Range(0, 2) == 1;
+                if (condicao){
+                    CreateTurn(); 
+                } else {StartCoroutine(CreateTurnWithTrap());} 
+                counter = nextTurnInterval/speed;
+            }
+            if (Input.GetMouseButtonDown(0) && !UIController.IsPointerOverGameObject()){
                 Turn();
                 creatingPath = true;
-                StartCoroutine(CreatPath());
+                StartCoroutine(CreatePath());
             }
         }
     }
 
-    IEnumerator CreatPath(){
+    IEnumerator CreatePath(){
         Instantiate(Path, Spawner.transform.position, Quaternion.identity);
         yield return new WaitForSeconds(waitTime/speed);
-        if(creatingPath) {StartCoroutine(CreatPath());}
+        if(creatingPath) {StartCoroutine(CreatePath());}
     }
 
     void Turn(){
@@ -89,6 +93,56 @@ public class GameController : MonoBehaviour
                 transform.Rotate(0, 0, -90); 
             }
         }
+    }
+
+    void CreateTrap(){
+        //GameObject[] tempPath = new GameObject[turnPathSize];
+        if (!isLandscape){
+            for(int i = 0; i < turnPathSize - 1; i++){
+                GameObject clone = Instantiate(Path,
+                            new Vector3(Spawner.transform.position.x -1 - i, Spawner.transform.position.y, Spawner.transform.position.z),
+                            Quaternion.identity);
+                //tempPath[i] = clone;  
+            }
+        }else{
+            for(int i = 0; i < turnPathSize - 1; i++){
+                GameObject clone = Instantiate(Path,
+                            new Vector3(Spawner.transform.position.x, Spawner.transform.position.y - 1 - i, Spawner.transform.position.z),
+                            Quaternion.identity);
+                //tempPath[i] = clone;
+            }
+            GameObject clone2 = Instantiate(Path, Spawner.transform.position, Spawner.transform.rotation);
+            //tempPath[turnPathSize - 1] = clone2;
+            //pathQueue.Enqueue(tempPath);
+        }
+    }
+
+    IEnumerator CreateTurnWithTrap(){
+        bool trapFirst = Random.Range(0, 2) == 1;
+        if (trapFirst){
+            CreateTrap();
+            float i = 0.5f;
+            while (i > 0){
+                StartCoroutine(CreatePath());
+                i -= Time.deltaTime; 
+            }
+            CreateTurn();
+        }else{
+            CreateTurn();
+            float i = 5f;
+            while (i > 0){
+                StartCoroutine(CreatePath());
+                i -= Time.deltaTime; 
+            }
+            CreateTrap();
+        }
+        yield return null;
+    }
+
+    IEnumerator CreateTrapPath(){
+        Instantiate(Path, Spawner.transform.position, Quaternion.identity);
+        yield return new WaitForSeconds(waitTime/speed);
+        if(creatingPath) {StartCoroutine(CreatePath());}
     }
 
     void CreateTurn(){

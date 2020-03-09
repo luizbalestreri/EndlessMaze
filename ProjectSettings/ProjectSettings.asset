@@ -251,7 +251,7 @@ PlayerSettings:
   AndroidKeystoreName: C:/Users/pili_/Documents/Unity5/Endlessmaze/user.keystore
   AndroidKeyaliasName: upload
   AndroidBuildApkPerCpuArchitecture: 1
-  AndroidTVCompatibility: 1
+  AndroidTVCompatibility: 0
   AndroidIsGame: 1
   AndroidEnableTango: 0
   androidEnableBanner: 1
