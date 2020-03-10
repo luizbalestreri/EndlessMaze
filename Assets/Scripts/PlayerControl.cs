@@ -22,12 +22,13 @@ public class PlayerControl : MonoBehaviour
         wZ.windMain = wzMain;
     }
 
-    private void OnTriggerEnter(Collider other) {
+    private void OnTriggerEnter2D(Collider2D other) {
         gameController.canTurn = true;
+        Debug.Log("collider");
     }
 
-    private void OnTriggerExit(Collider other){
-        other.GetComponent<Collider>().enabled = false;
+    private void OnTriggerExit2D(Collider2D other){
+        other.GetComponent<Collider2D>().enabled = false;
         if(gameController.canTurn){
             gameController.GameOver();
         }

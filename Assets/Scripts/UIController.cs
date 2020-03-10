@@ -8,6 +8,7 @@ using UnityEngine.EventSystems;
 public class UIController : MonoBehaviour
 {
     public GameObject gameOver, scoreCounter, newGame, pauseBtn;
+    public AudioSource audioSource;
     public Text txtPause;
     public GameController gameController;
     public bool pause = false;
@@ -50,14 +51,12 @@ public class UIController : MonoBehaviour
     public static bool IsPointerOverGameObject(){
              //check mouse
         if(EventSystem.current.IsPointerOverGameObject())
-            return true;
-             
+            return true;    
              //check touch
         if(Input.touchCount > 0 && Input.touches[0].phase == TouchPhase.Began ){
             if(EventSystem.current.IsPointerOverGameObject(Input.touches[0].fingerId))
                 return true;
-        }
-             
+        }     
         return false;
     }
 }

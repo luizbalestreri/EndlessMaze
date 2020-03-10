@@ -23,8 +23,8 @@ public class Movement : MonoBehaviour{
         Direction = new Vector3(dirX, dirY, 0);
         transform.position -= Direction * speed * Time.deltaTime;
         
-        if (gcObjectTF.position.x - transform.position.x  > 7 ||
-           gcObjectTF.position.y - transform.position.y > 7)  
+        if (gcObjectTF.position.x - transform.position.x  > 11 ||
+           gcObjectTF.position.y - transform.position.y > 11)  
             Destroy(gameObject);
         speed = gameController.speed;
     }
