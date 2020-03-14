@@ -7,19 +7,30 @@ using UnityEngine.EventSystems;
 
 public class UIController : MonoBehaviour
 {
-    public GameObject gameOver, scoreCounter, newGame, pauseBtn;
+    public GameObject gameOver, scoreCounter, newGame, pauseBtn, newRecord;
     public AudioSource audioSource;
     public Text txtPause;
     public GameController gameController;
     public bool pause = false;
-    public Text ScoreCounter;
+    public Text txtScoreCounter;
     void Update(){
-        ScoreCounter.text = gameController.score.ToString();
+        txtScoreCounter.text = gameController.score.ToString();
     }
 
     public void GameOverUI(){
         gameOver.SetActive(true);
         scoreCounter.SetActive(false);
+        Text txtTopScore = GameObject.Find("Top Score").GetComponent<Text>();
+        int topScore = PlayerPrefs.GetInt("score", gameController.score);
+        if (topScore > gameController.score){
+            txtTopScore.text = topScore.ToString();
+        } else {
+            PlayerPrefs.SetInt("score", gameController.score);
+            PlayerPrefs.Save();
+            newRecord.SetActive(true);
+            txtTopScore.text = gameController.score.ToString();
+            Debug.Log(PlayerPrefs.GetInt("score", gameController.score));
+        }
     }
 
     public void Restart(){

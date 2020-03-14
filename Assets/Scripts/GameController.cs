@@ -6,14 +6,14 @@ using UnityEngine.Rendering.PostProcessing;
 
 public class GameController : MonoBehaviour
 {
-    public GameObject Spawner, Path, Player, Explosion, PathRight, PathLeft, Cam;
+    public GameObject Spawner, Path, Player, Explosion, PathRight, Cam;
     public UIController UIController;
     public Queue<GameObject> pathQueue, trapQueue;
     public float speed{get; private set;} = 0;
-    public float speedAdd, nextTurnInterval = 10;
+    public float speedAdd, nextTurnInterval = 10, rotationSpeed = 0.3f;
     float counter, waitTime = 0.7f;
     public int score{get; private set;}
-    public int scoreAdd = 1;
+    public int trap, scoreAdd = 1;
     public bool isLandscape {get; private set;} = false;
     public bool canTurn = false, gameOver = true;
     bool creatingPath = true;
@@ -45,8 +45,9 @@ public class GameController : MonoBehaviour
             }
 
             if (counter <= 0) {
-                bool createTrap = Random.Range(0, 3) == 1;
+                bool createTrap = true;// Random.Range(0, 3) == 1;
                 if (!createTrap){
+                   trap = 0;
                     CreateTurn();
                 }else{
                     StartCoroutine(CreateTurnWithTrap());
@@ -78,24 +79,24 @@ public class GameController : MonoBehaviour
             if (isLandscape) {
                 transform.Rotate(0, 0, 90); 
                 Vector3 destRotation = Vector3.zero;
-                StartCoroutine(CameraRotation(Cam.transform.rotation, destRotation, 0.5f));
+                StartCoroutine(CameraRotation(Cam.transform.rotation, destRotation, rotationSpeed));
                 Vector3 temp = Spawner.transform.position;
                 float diff = temp.x - tempPath.transform.position.x;
                 if (tempTrap != null) {
                     Vector3 tTtp = tempTrap.transform.position;
-                    tempTrap.transform.position = new Vector3(tTtp.x + diff, tTtp.y, tTtp.y);
+                    tempTrap.transform.position = new Vector3(tTtp.x + diff, tTtp.y, tTtp.z);
                 }
                 tempPath.transform.position = new Vector3(temp.x, tempPath.transform.position.y, tempPath.transform.position.z);
                 StartCoroutine(Player.GetComponent<PlayerControl>().WindDirection(-1));
             } else {
                 transform.Rotate(0, 0, -90);
                 Vector3 destRotation = new Vector3(0, 0, -90);
-                StartCoroutine(CameraRotation(Cam.transform.rotation, destRotation, 0.5f));
+                StartCoroutine(CameraRotation(Cam.transform.rotation, destRotation, rotationSpeed));
                 Vector3 temp = Spawner.transform.position;
                 float diff = temp.y - tempPath.transform.position.y;
                 if (tempTrap != null) {
                     Vector3 tTtp = tempTrap.transform.position; 
-                    tempTrap.transform.position = new Vector3(tTtp.x, tTtp.y + diff, tTtp.y);
+                    tempTrap.transform.position = new Vector3(tTtp.x, tTtp.y + diff, tTtp.z);
                 }
                 tempPath.transform.position = new Vector3(tempPath.transform.position.x, temp.y, tempPath.transform.position.z);
                 StartCoroutine(Player.GetComponent<PlayerControl>().WindDirection(1));
@@ -106,10 +107,10 @@ public class GameController : MonoBehaviour
             GameOver();
             if (isLandscape) {
                 transform.Rotate(0, 0, 90);
-                StartCoroutine(CameraRotation(Cam.transform.rotation, Vector3.zero, 0.1f));
+                StartCoroutine(CameraRotation(Cam.transform.rotation, Vector3.zero, rotationSpeed/2));
             } else{
                 transform.Rotate(0, 0, -90); 
-                StartCoroutine(CameraRotation(Cam.transform.rotation, new Vector3(0, 0 , -90), 0.1f));
+                StartCoroutine(CameraRotation(Cam.transform.rotation, new Vector3(0, 0 , -90), rotationSpeed/2));
             }
             isLandscape = !isLandscape;
         }
@@ -137,15 +138,21 @@ public class GameController : MonoBehaviour
             new Vector3(Spawner.transform.position.x, Spawner.transform.position.y + i, Spawner.transform.position.z), 
                         Quaternion.Euler(new Vector3(0, 0, 180)));
         }
-        tempPath.transform.Find("Collider").GetComponent<Collider2D>().enabled = false;
+        if (trap == 0){
+            tempPath.transform.Find("Collider").GetComponent<Collider2D>().enabled = false;
+        } else {
+            tempPath.transform.Find("Collider").tag = "trap";
+        }
         trapQueue.Enqueue(tempPath);
     }
     IEnumerator CreateTurnWithTrap(){
         bool trapFirst = Random.Range(0, 2) == 1;        
         if (trapFirst){
+            trap = 0;
             CreateTurn();
             CreateTrap(-1);
         } else {
+            trap = 1;
             CreateTurn();
             CreateTrap(1);
         }

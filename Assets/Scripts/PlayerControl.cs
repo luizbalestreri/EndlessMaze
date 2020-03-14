@@ -23,15 +23,18 @@ public class PlayerControl : MonoBehaviour
     }
 
     private void OnTriggerEnter2D(Collider2D other) {
-        gameController.canTurn = true;
-        Debug.Log("collider");
+        if (other.tag != "trap")
+            gameController.canTurn = true;
     }
 
     private void OnTriggerExit2D(Collider2D other){
         other.GetComponent<Collider2D>().enabled = false;
-        if(gameController.canTurn){
+        if(gameController.canTurn && gameController.trap == 0){
+            gameController.GameOver();
+        } else if (other.tag == "trap"){
             gameController.GameOver();
         }
+        gameController.canTurn = false;
     }
 
     public IEnumerator WindDirection(int direction){
