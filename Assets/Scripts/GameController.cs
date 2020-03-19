@@ -2,23 +2,24 @@
 using System.Collections.Generic;
 using UnityEngine;
 using EZCameraShake;
-using UnityEngine.Rendering.PostProcessing;
 
 public class GameController : MonoBehaviour
 {
-    public GameObject Spawner, Path, Player, Explosion, PathRight, Cam;
+    public GameObject Spawner, Path, Player, Explosion, PathRight;
+    public CameraController cameraController;
     public UIController UIController;
     public Queue<GameObject> pathQueue, trapQueue;
-    public float speed{get; private set;} = 0;
+    public float speed{get; set;} = 0;
     public float speedAdd, nextTurnInterval = 10, rotationSpeed = 0.3f;
-    float counter, waitTime = 0.7f;
+    protected float counter, waitTime = 0.7f;
     public int score{get; private set;}
-    public int trap, scoreAdd = 1;
-    public bool isLandscape {get; private set;} = false;
+    public int trap, scoreAdd = 1, RandomMax = 4;
+    public bool isLandscape {get; protected set;} = false;
     public bool canTurn = false, gameOver = true;
-    bool creatingPath = true;
+    public bool creatingPath = true;
     
     void Awake() {
+        cameraController = Camera.main.GetComponent<CameraController>();
         score = 0;
         speedAdd = 0.2f; 
         Spawner = transform.Find("Spawner").gameObject;
@@ -45,12 +46,14 @@ public class GameController : MonoBehaviour
             }
 
             if (counter <= 0) {
-                bool createTrap = true;// Random.Range(0, 3) == 1;
+                int trapRange = Random.Range(0, RandomMax);
+                Debug.Log(trapRange);
+                bool createTrap =  true;//trapRange == 3;
                 if (!createTrap){
                    trap = 0;
                     CreateTurn();
                 }else{
-                    StartCoroutine(CreateTurnWithTrap());
+                    CreateTurnWithTrap();
                 } 
                 counter = nextTurnInterval/speed;
             }
@@ -63,7 +66,7 @@ public class GameController : MonoBehaviour
         }
     }
 
-    IEnumerator CreatePath(){
+    public IEnumerator CreatePath(){
         Instantiate(Path, Spawner.transform.position, Quaternion.identity);
         yield return new WaitForSeconds(waitTime/speed);
         if(creatingPath) {StartCoroutine(CreatePath());}
@@ -71,52 +74,56 @@ public class GameController : MonoBehaviour
 
     void Turn(){
         if (canTurn){
-            GameObject tempPath = pathQueue.Dequeue();
-            GameObject tempTrap = null;
+            GameObject dequeuePath = pathQueue.Dequeue();
+            GameObject dequeueTrap = null;
+
             if(trapQueue.Count > 0){
-                tempTrap = trapQueue.Dequeue();
+                dequeueTrap = trapQueue.Dequeue();
             }
+
             if (isLandscape) {
-                transform.Rotate(0, 0, 90); 
-                Vector3 destRotation = Vector3.zero;
-                StartCoroutine(CameraRotation(Cam.transform.rotation, destRotation, rotationSpeed));
-                Vector3 temp = Spawner.transform.position;
-                float diff = temp.x - tempPath.transform.position.x;
-                if (tempTrap != null) {
-                    Vector3 tTtp = tempTrap.transform.position;
-                    tempTrap.transform.position = new Vector3(tTtp.x + diff, tTtp.y, tTtp.z);
+                Quaternion destRotation = Quaternion.Euler(Vector3.zero);
+                transform.rotation = destRotation; 
+                StartCoroutine(cameraController.CameraRotation(destRotation, rotationSpeed));
+                Vector3 spwnPos = Spawner.transform.position;
+                if (dequeueTrap != null) {
+                    float diff = spwnPos.x - dequeuePath.transform.position.x;
+                    Vector3 dqTrapPos = dequeueTrap.transform.position;
+                    dequeueTrap.transform.position = new Vector3(dqTrapPos.x + diff, dqTrapPos.y, dqTrapPos.z);
                 }
-                tempPath.transform.position = new Vector3(temp.x, tempPath.transform.position.y, tempPath.transform.position.z);
+                dequeuePath.transform.position = new Vector3(spwnPos.x, dequeuePath.transform.position.y, dequeuePath.transform.position.z);
                 StartCoroutine(Player.GetComponent<PlayerControl>().WindDirection(-1));
+
             } else {
-                transform.Rotate(0, 0, -90);
-                Vector3 destRotation = new Vector3(0, 0, -90);
-                StartCoroutine(CameraRotation(Cam.transform.rotation, destRotation, rotationSpeed));
-                Vector3 temp = Spawner.transform.position;
-                float diff = temp.y - tempPath.transform.position.y;
-                if (tempTrap != null) {
-                    Vector3 tTtp = tempTrap.transform.position; 
-                    tempTrap.transform.position = new Vector3(tTtp.x, tTtp.y + diff, tTtp.z);
+                Quaternion destRotation = Quaternion.Euler(0, 0, -90);
+                transform.rotation = destRotation;
+                StartCoroutine(cameraController.CameraRotation(destRotation, rotationSpeed));
+                Vector3 spwnPos = Spawner.transform.position;
+                if (dequeueTrap != null) {
+                    float diff = spwnPos.y - dequeuePath.transform.position.y;
+                    Vector3 dqTrapPos = dequeueTrap.transform.position; 
+                    dequeueTrap.transform.position = new Vector3(dqTrapPos.x, dqTrapPos.y + diff, dqTrapPos.z);
                 }
-                tempPath.transform.position = new Vector3(tempPath.transform.position.x, temp.y, tempPath.transform.position.z);
+                dequeuePath.transform.position = new Vector3(dequeuePath.transform.position.x, spwnPos.y, dequeuePath.transform.position.z);
                 StartCoroutine(Player.GetComponent<PlayerControl>().WindDirection(1));
             }
             isLandscape = !isLandscape;
             canTurn = false;
+        
         } else {
             GameOver();
             if (isLandscape) {
                 transform.Rotate(0, 0, 90);
-                StartCoroutine(CameraRotation(Cam.transform.rotation, Vector3.zero, rotationSpeed/2));
+                StartCoroutine(cameraController.CameraRotation(Quaternion.Euler(Vector3.zero), rotationSpeed/2));
             } else{
                 transform.Rotate(0, 0, -90); 
-                StartCoroutine(CameraRotation(Cam.transform.rotation, new Vector3(0, 0 , -90), rotationSpeed/2));
+                StartCoroutine(cameraController.CameraRotation(Quaternion.Euler(0, 0 , -90), rotationSpeed/2));
             }
             isLandscape = !isLandscape;
         }
     }
 
-    void CreateTurn(){
+    public void CreateTurn(){
         GameObject tempPath = null;
         if (!isLandscape){
             tempPath = Instantiate(PathRight, Spawner.transform.position, Spawner.transform.rotation);
@@ -127,16 +134,15 @@ public class GameController : MonoBehaviour
         pathQueue.Enqueue(tempPath);
     }
 
-    void CreateTrap(int i){
+    protected void CreateTrap(int posicao){
         GameObject tempPath = null;
-        if (isLandscape){
+        Vector3 spawnerPos = Spawner.transform.position;
+        if (isLandscape){ 
             tempPath = Instantiate(PathRight, 
-            new Vector3(Spawner.transform.position.x + i, Spawner.transform.position.y, Spawner.transform.position.z),
-                        Spawner.transform.rotation);
+            new Vector3(spawnerPos.x + posicao, spawnerPos.y, spawnerPos.z), Spawner.transform.rotation);
         }else{
             tempPath = Instantiate(PathRight, 
-            new Vector3(Spawner.transform.position.x, Spawner.transform.position.y + i, Spawner.transform.position.z), 
-                        Quaternion.Euler(new Vector3(0, 0, 180)));
+            new Vector3(spawnerPos.x - 9, spawnerPos.y + posicao, spawnerPos.z), Quaternion.Euler(0, 0, 0));
         }
         if (trap == 0){
             tempPath.transform.Find("Collider").GetComponent<Collider2D>().enabled = false;
@@ -145,7 +151,8 @@ public class GameController : MonoBehaviour
         }
         trapQueue.Enqueue(tempPath);
     }
-    IEnumerator CreateTurnWithTrap(){
+
+    void CreateTurnWithTrap(){
         bool trapFirst = Random.Range(0, 2) == 1;        
         if (trapFirst){
             trap = 0;
@@ -156,33 +163,14 @@ public class GameController : MonoBehaviour
             CreateTurn();
             CreateTrap(1);
         }
-        yield return null;
     }
 
-    IEnumerator CameraRotation(Quaternion rotation, Vector3 target, float time){
-        Camera.main.orthographic = false;
-        Camera.main.GetComponent<PostProcessLayer>().enabled = true;
-        float i = 0;
-        float multiplier = 1/time;
-        while(i < time){
-            Cam.transform.rotation = Quaternion.Slerp(rotation, Quaternion.Euler(target), i * multiplier);
-            i += Time.deltaTime;
-            yield return new WaitForEndOfFrame();
-        }
-        Cam.transform.rotation = Quaternion.Euler(target);
-        Camera.main.GetComponent<PostProcessLayer>().enabled = false;
-        Camera.main.orthographic = true;
-        yield return null;
-    }
     public void GameOver(){
         speed = 0;
         canTurn = false;
         gameOver = true;
-        Instantiate(Explosion, 
-            new Vector3(Player.transform.position.x,
-            Player.transform.position.y,
-            Player.transform.position.z - 8),
-            Quaternion.identity);
+        Vector3 playerPos = Player.transform.position;
+        Instantiate(Explosion, new Vector3(playerPos.x, playerPos.y, playerPos.z - 8), Quaternion.identity);
         Destroy(Player);
         UIController.GameOverUI();
         CameraShaker.Instance.ShakeOnce(2f, 2f, .1f, 0.5f);
