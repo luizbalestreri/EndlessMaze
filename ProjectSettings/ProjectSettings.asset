@@ -159,7 +159,7 @@ PlayerSettings:
   applicationIdentifier:
     Android: com.LHB.EndlessMaze
   buildNumber: {}
-  AndroidBundleVersionCode: 7
+  AndroidBundleVersionCode: 10
   AndroidMinSdkVersion: 18
   AndroidTargetSdkVersion: 0
   AndroidPreferredInstallLocation: 1

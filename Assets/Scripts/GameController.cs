@@ -10,7 +10,7 @@ public class GameController : MonoBehaviour
     public UIController UIController;
     public Queue<GameObject> pathQueue, trapQueue;
     public float speed{get; set;} = 0;
-    public float speedAdd, nextTurnInterval = 10, rotationSpeed = 0.3f;
+    public float speedAdd, nextTurnInterval = 10, rotationSpeed = 0.2f;
     protected float counter, waitTime = 0.7f;
     public int score{get; private set;}
     public int trap, scoreAdd = 1, RandomMax = 4;
@@ -40,7 +40,7 @@ public class GameController : MonoBehaviour
             score+=scoreAdd;
 
             if(creatingPath){
-                if (counter<=(0.2f/speed)){
+                if (counter<=(0.1f/speed)){
                     creatingPath = false;
                 }
             }
@@ -48,7 +48,7 @@ public class GameController : MonoBehaviour
             if (counter <= 0) {
                 int trapRange = Random.Range(0, RandomMax);
                 Debug.Log(trapRange);
-                bool createTrap =  true;//trapRange == 3;
+                bool createTrap = trapRange == 3;
                 if (!createTrap){
                    trap = 0;
                     CreateTurn();

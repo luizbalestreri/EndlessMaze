@@ -196,10 +196,8 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'Remember the last turn to know in which way the next one is.
-
-
-    If two turns appears, do the turn in the way according to the current way.'
+  m_Text: "Lembre-se da \xFAltima curva para saber o sentido da pr\xF3xima.\n\nCaso
+    apare\xE7am duas curvas realize a curva de acordo com o sentido atual\n"
 --- !u!222 &65929348
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -291,7 +289,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: return
+  m_Text: voltar
 --- !u!222 &469592452
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -348,12 +346,12 @@ MonoBehaviour:
   m_Script: {fileID: 1980459831, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 800, y: 600}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
+  m_MatchWidthOrHeight: 1
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -750,10 +748,8 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'When a you reach a turn, touch the screen to make the turn.
-
-
-    The turns happen in the clockwise and counter- clockwise, alternately.'
+  m_Text: "Ao chegar em uma curva, toque a tela para virar.\n\nAs curvas acontecem
+    no sentido hor\xE1rio e anti-hor\xE1rio, alternadamente.\n"
 --- !u!222 &843740539
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -812,7 +808,7 @@ MonoBehaviour:
       no sentido hor\xE1rio e anti-hor\xE1rio, alternadamente.\n"
     Object: {fileID: 0}
   - Language: English
-    Text: 'When a you reach a turn, touch the screen to make the turn.
+    Text: 'When you reach a turn, touch the screen to make the turn.
 
 
       The turns happen in the clockwise and counter- clockwise, alternately.'
@@ -827,7 +823,6 @@ GameObject:
   m_Component:
   - component: {fileID: 868855132}
   - component: {fileID: 868855131}
-  - component: {fileID: 868855130}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -835,14 +830,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &868855130
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 868855129}
-  m_Enabled: 1
 --- !u!20 &868855131
 Camera:
   m_ObjectHideFlags: 0
@@ -1033,7 +1020,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: How to Play
+  m_Text: Como Jogar
 --- !u!222 &1287731059
 CanvasRenderer:
   m_ObjectHideFlags: 0

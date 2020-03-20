@@ -2461,7 +2461,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: how to play
+  m_Text: ajuda
 --- !u!222 &997118751
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4719,8 +4719,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 806f0696300aeac44a0e17efee222854, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DefaultLanguage: English
-  DetectLanguage: 2
+  DefaultLanguage: 
+  DetectLanguage: 1
   SaveLanguage: 1
   languages:
   - name: English
