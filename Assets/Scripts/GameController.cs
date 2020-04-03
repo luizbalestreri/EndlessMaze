@@ -142,7 +142,7 @@ public class GameController : MonoBehaviour
             new Vector3(spawnerPos.x + posicao, spawnerPos.y, spawnerPos.z), Spawner.transform.rotation);
         }else{
             tempPath = Instantiate(PathRight, 
-            new Vector3(spawnerPos.x - 9, spawnerPos.y + posicao, spawnerPos.z), Quaternion.Euler(0, 0, 0));
+            new Vector3(spawnerPos.x, spawnerPos.y + posicao, spawnerPos.z), Quaternion.Euler(0, 0, 180));
         }
         if (trap == 0){
             tempPath.transform.Find("Collider").GetComponent<Collider2D>().enabled = false;
